@@ -20,19 +20,13 @@
   <p id="cartTotal"></p>
   <button id="checkoutBtn">Checkout</button>
 </main>
+</script>
 
-<script src="store.js"></script>
 <script src="auth.js"></script>
+<script src="store.js"></script>
 <script>
   checkAuth();
   renderCart();
-
-  document.getElementById("checkoutBtn").addEventListener("click", () => {
-    alert("Order placed! (dummy checkout)");
-    localStorage.removeItem("cart");
-    cart = [];
-    renderCart();
-  });
 </script>
 
 </body>
