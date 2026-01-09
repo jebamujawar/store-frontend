@@ -3,12 +3,15 @@ const API_URL = "https://store-backend-a653.onrender.com/api"; // Backend API UR
 const productsContainer = document.getElementById("productsContainer");
 const cartCount = document.getElementById("cartCount");
 
-// Dummy product list (replace with backend API later)
+// Dummy product list
 const products = [
-  { id: 1, title: "Red T-Shirt", price: 20, image: "images/red-shirt.png" },
-  { id: 2, title: "Blue Jeans", price: 35, image: "images/blue-jeans.png" },
-  { id: 3, title: "Sneakers", price: 50, image: "images/sneakers.png" }
+  { id: 1, title: "Toddler-Pajama", price: 320, image: "images/toddler-pajama.png" },
+  { id: 2, title: "Dress", price: 350, image: "images/dress.png" },
+  { id: 3, title: "Jacket", price: 650, image: "images/jacket.png" },
+  { id: 4, title: "Girl-Dress", price: 500, image: "images/girl-dress.jfif" },
+  { id: 5, title: "Sweatshirt", price: 450, image: "images/sweatshirt.png" }
 ];
+
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
@@ -20,11 +23,20 @@ function saveCart() {
 
 // Add product to cart
 function addToCart(productId) {
+  if (!getToken()) {
+    alert("You must log in to add items to the cart!");
+    window.location.href = "login.html";  // optional: redirect to login
+    return;
+  }
+
   const product = products.find(p => p.id === productId);
   if (!product) return;
+
   cart.push(product);
   saveCart();
+  renderCart(); // update cart UI if needed
 }
+
 
 // Remove product from cart
 function removeFromCart(productId) {
