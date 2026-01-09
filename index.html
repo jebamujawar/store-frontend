@@ -10,7 +10,7 @@
   <h1>My Store</h1>
   <nav>
     <a href="cart.html">Cart</a>
-    <a href="login.html" id="authLink">Login</a>
+    <a href="#" id="authLink"></a> <!-- Login/Logout dynamically handled -->
   </nav>
 </header>
 
@@ -19,11 +19,9 @@
   <div id="productsContainer" class="products-grid"></div>
 </main>
 
-<script src="auth.js"></script>
 <script src="store.js"></script>
 <script>
-  checkAuth();
-  renderProducts();
+  checkAuth();  // Update nav
 </script>
 </body>
 </html>

@@ -10,24 +10,20 @@
   <h1>My Store</h1>
   <nav>
     <a href="index.html">Home</a>
-    <a href="login.html" id="authLink">Login</a>
+    <a href="#" id="authLink"></a>
   </nav>
 </header>
 
 <main>
   <h2>Your Cart</h2>
   <div id="cartContainer"></div>
-  <p id="cartTotal"></p>
+  <p>Total: $<span id="cartTotal">0.00</span></p>
   <button id="checkoutBtn">Checkout</button>
 </main>
-</script>
 
-<script src="auth.js"></script>
 <script src="store.js"></script>
 <script>
-  checkAuth();
-  renderCart();
+  checkAuth(); // Update nav
 </script>
-
 </body>
 </html>
