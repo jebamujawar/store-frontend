@@ -1,9 +1,9 @@
 const productsContainer = document.getElementById("productsContainer");
 
 const products = [
-  { id: 1, title: "Red T-Shirt", price: 20, image: "images/red-shirt.png" },
-  { id: 2, title: "Blue Jeans", price: 35, image: "images/blue-jeans.png" },
-  { id: 3, title: "Sneakers", price: 50, image: "images/sneakers.png" }
+  { id: 1, title: "Toddler Pajama", price: 320, image: "images/toddler-pajama.png" },
+  { id: 2, title: "Kids Jacket", price: 850, image: "images/jacket.png" },
+  { id: 3, title: "Girl Dress", price: 400, image: "images/dress.png" }
 ];
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
