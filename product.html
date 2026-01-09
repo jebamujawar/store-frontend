@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Product Details</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>My Store</h1>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="cart.html">Cart</a>
+    <a href="login.html" id="authLink">Login</a>
+  </nav>
+</header>
+
+<main>
+  <div id="productDetails" class="product-detail"></div>
+</main>
+
+<script src="cart.js"></script>
+<script>
+  checkAuth();
+  const params = new URLSearchParams(window.location.search);
+  const productId = params.get("id");
+  if (!productId) document.getElementById("productDetails").innerHTML = "<p>Product not found.</p>";
+  else loadProduct(productId);
+</script>
+</body>
+</html>
