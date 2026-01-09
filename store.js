@@ -1,52 +1,60 @@
-const API_URL = "https://store-backend-a653.onrender.com/api"; // Backend API URL
+const productsContainer = document.getElementById("productsContainer");
 
-// ------------------ Auth functions ------------------
-function setToken(token) {
-  localStorage.setItem("token", token);
+const products = [
+  { id: 1, title: "Red T-Shirt", price: 20, image: "images/red-shirt.png" },
+  { id: 2, title: "Blue Jeans", price: 35, image: "images/blue-jeans.png" },
+  { id: 3, title: "Sneakers", price: 50, image: "images/sneakers.png" }
+];
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+function saveCart() {
+  localStorage.setItem("cart", JSON.stringify(cart));
 }
 
-function getToken() {
-  return localStorage.getItem("token");
+function addToCart(productId) {
+  const product = products.find(p => p.id === productId);
+  if (!product) return;
+  cart.push(product);
+  saveCart();
 }
 
-function logout() {
-  localStorage.removeItem("token");
-  window.location.href = "login.html";
+function removeFromCart(productId) {
+  cart = cart.filter(p => p.id !== productId);
+  saveCart();
+  renderCart();
 }
 
-// Update login/signup nav if present
-function checkAuth() {
-  const authLink = document.getElementById("authLink");
-  if (!authLink) return;
-  if (getToken()) {
-    authLink.textContent = "Logout";
-    authLink.href = "#";
-    authLink.onclick = logout;
+function renderProducts() {
+  if (!productsContainer) return;
+
+  productsContainer.innerHTML = products.map(p => `
+    <div class="product-card">
+      <img src="${p.image}" alt="${p.title}">
+      <h3>${p.title}</h3>
+      <p>$${p.price}</p>
+      <button onclick="addToCart(${p.id})">Add to Cart</button>
+    </div>
+  `).join('');
+}
+
+function renderCart() {
+  const cartContainer = document.getElementById("cartContainer");
+  if (!cartContainer) return;
+
+  cartContainer.innerHTML = cart.length === 0
+    ? "<p>Your cart is empty.</p>"
+    : cart.map(p => `
+        <div class="cart-item">
+          <img src="${p.image}" alt="${p.title}">
+          <span>${p.title}</span>
+          <span>$${p.price}</span>
+          <button onclick="removeFromCart(${p.id})">Remove</button>
+        </div>
+      `).join('');
+
+  const totalElem = document.getElementById("cartTotal");
+  if (totalElem) {
+    totalElem.textContent = cart.reduce((s, i) => s + i.price, 0).toFixed(2);
   }
-}
-
-// Login function
-async function login(email, password) {
-  const res = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
-  });
-  if (!res.ok) throw await res.json();
-  const data = await res.json();
-  setToken(data.token);
-  return data;
-}
-
-// Signup function
-async function signup(name, email, password) {
-  const res = await fetch(`${API_URL}/auth/signup`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password })
-  });
-  if (!res.ok) throw await res.json();
-  const data = await res.json();
-  setToken(data.token);
-  return data;
 }

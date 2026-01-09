@@ -21,16 +21,19 @@
   <button id="checkoutBtn">Checkout</button>
 </main>
 
-<script src="cart.js"></script>
+<script src="store.js"></script>
+<script src="auth.js"></script>
 <script>
   checkAuth();
-  loadCart();
+  renderCart();
 
   document.getElementById("checkoutBtn").addEventListener("click", () => {
     alert("Order placed! (dummy checkout)");
     localStorage.removeItem("cart");
-    loadCart();
+    cart = [];
+    renderCart();
   });
 </script>
+
 </body>
 </html>
