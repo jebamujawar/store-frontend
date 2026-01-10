@@ -9,23 +9,20 @@
 <header>
   <h1>My Store</h1>
   <nav>
-    <a href="cart.html" id="goToCartBtn" style="display:none;">Go to Cart(<span id="cartCount">0</span>)</a>
-    <a href="login.html">Login</a> 
-    <a href="signup.html">Signup</a>
-     
-  </nav>
-</header>
+  <a id="loginLink" href="login.html">Login</a>
+  <a id="signupLink" href="signup.html">Signup</a>
+  <a id="logoutLink" href="logout.html" style="display:none">Logout</a>
+  <a id="goToCartBtn" href="cart.html" style="display:none">Go to Cart (<span id="cartCount">0</span>)</a>
+</nav>
 
+</header>
 
 <main>
   <h2>Products</h2>
   <div id="productsContainer" class="products-grid"></div>
 </main>
 
+<!-- Scripts -->
 <script src="store.js"></script>
-<script>
-  checkAuth();  // Update nav
-   //renderProducts();
-</script>
 </body>
 </html>

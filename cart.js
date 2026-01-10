@@ -1,42 +1,6 @@
-const API_URL = "https://store-backend-a653.onrender.com/api"; // Backend API URL
-
-const productsContainer = document.getElementById("productsContainer");
-const cartCount = document.getElementById("cartCount");
-
-// Dummy product list
-const products = [
-  { id: 1, title: "Toddler-Pajama", price: 320, image: "images/toddler-pajama.png" },
-  { id: 2, title: "Dress", price: 350, image: "images/dress.png" },
-  { id: 3, title: "Jacket", price: 650, image: "images/jacket.png" },
-  { id: 4, title: "Girl-Dress", price: 500, image: "images/girl-dress.jfif" },
-  { id: 5, title: "Sweatshirt", price: 450, image: "images/sweatshirt.png" }
-];
-
-
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-// Save cart to localStorage and update cart count
-function saveCart() {
-  localStorage.setItem("cart", JSON.stringify(cart));
-  cartCount.textContent = cart.length;
-}
-
-// Add product to cart
-function addToCart(productId) {
-  if (!getToken()) {
-    alert("You must log in to add items to the cart!");
-    window.location.href = "login.html";  // optional: redirect to login
-    return;
-  }
-
-  const product = products.find(p => p.id === productId);
-  if (!product) return;
-
-  cart.push(product);
-  saveCart();
-  renderCart(); // update cart UI if needed
-}
-
+const cartContainer = document.getElementById("cartContainer");
+const cartTotalElem = document.getElementById("cartTotal");
 
 // Remove product from cart
 function removeFromCart(productId) {
@@ -45,23 +9,28 @@ function removeFromCart(productId) {
   renderCart();
 }
 
-// Render product list
-function renderProducts() {
-  productsContainer.innerHTML = products.map(p => `
-    <div class="product-card">
-      <img src="${p.image}" alt="${p.title}">
-      <h3>${p.title}</h3>
-      <p>$${p.price}</p>
-      <button onclick="addToCart(${p.id})">Add to Cart</button>
-    </div>
-  `).join('');
+// Save cart and update localStorage
+function saveCart() {
+  localStorage.setItem("cart", JSON.stringify(cart));
+  updateCartButton();
 }
 
-// Render cart items (optional checkout page)
+function updateCartButton() {
+  const countElem = document.getElementById("cartCount");
+  if (countElem) countElem.textContent = cart.length;
+}
+
+// Render cart page
 function renderCart() {
-  const cartContainer = document.getElementById("cartContainer");
   if (!cartContainer) return;
-  cartContainer.innerHTML = cart.map((p, i) => `
+
+  if (cart.length === 0) {
+    cartContainer.innerHTML = "<p>Your cart is empty.</p>";
+    cartTotalElem.textContent = "0";
+    return;
+  }
+
+  cartContainer.innerHTML = cart.map(p => `
     <div class="cart-item">
       <img src="${p.image}" alt="${p.title}">
       <span>${p.title}</span>
@@ -69,43 +38,74 @@ function renderCart() {
       <button onclick="removeFromCart(${p.id})">Remove</button>
     </div>
   `).join('');
+
+  const total = cart.reduce((sum, item) => sum + item.price, 0);
+  cartTotalElem.textContent = total.toFixed(2);
 }
 
-/*Dummy checkout
+// Checkout
 function checkout() {
-  if (cart.length === 0) return alert("Cart is empty!");
-  alert(`Checked out ${cart.length} items!`);
+  if (!localStorage.getItem("token")) {
+    alert("Please login to place an order!");
+    window.location.href = "login.html";
+    return;
+  }
+
+  if (cart.length === 0) {
+    alert("Your cart is empty!");
+    return;
+  }
+
+  const total = cart.reduce((sum, i) => sum + i.price, 0).toFixed(2);
+  alert(`Order placed successfully! Total: $${total}`);
+
+  // Clear cart
   cart = [];
   saveCart();
   renderCart();
-}*/
 
-// Render cart items
-function renderCart() {
-  const cartContainer = document.getElementById("cartContainer");
-  if (!cartContainer) return;
+  // Redirect to home
+  window.location.href = "index.html";
+}
 
-  cartContainer.innerHTML = cart.length === 0
-    ? "<p>Your cart is empty.</p>"
-    : cart.map((p, i) => `
-        <div class="cart-item">
-          <img src="${p.image}" alt="${p.title}">
-          <span>${p.title}</span>
-          <span>$${p.price}</span>
-          <button onclick="removeFromCart(${p.id})">Remove</button>
-        </div>
-      `).join('');
-  
-  // Update total
-  const totalElem = document.getElementById("cartTotal");
-  if (totalElem) {
-    const total = cart.reduce((sum, item) => sum + item.price, 0);
-    totalElem.textContent = total.toFixed(2);
+// ---------------------- Auth & Nav ----------------------
+function getToken() {
+  return localStorage.getItem("token");
+}
+
+function logout() {
+  localStorage.removeItem("token");
+  updateNav(); // Update nav links after logout
+  window.location.href = "index.html";
+}
+
+function updateNav() {
+  const loginLink = document.getElementById("loginLink");
+  const signupLink = document.getElementById("signupLink");
+  const logoutLink = document.getElementById("logoutLink");
+
+  if (!loginLink || !signupLink || !logoutLink) return;
+
+  if (getToken()) {
+    loginLink.style.display = "none";
+    signupLink.style.display = "none";
+    logoutLink.style.display = "inline-block";
+  } else {
+    loginLink.style.display = "inline-block";
+    signupLink.style.display = "inline-block";
+    logoutLink.style.display = "none";
   }
 }
 
+// Call this on page load
+document.addEventListener("DOMContentLoaded", () => {
+  updateNav();
+});
 
-// Initial load
-saveCart();
-renderProducts();
-renderCart();
+// Initialize
+document.addEventListener("DOMContentLoaded", () => {
+  renderCart();
+
+  const checkoutBtn = document.getElementById("checkoutBtn");
+  if (checkoutBtn) checkoutBtn.addEventListener("click", checkout);
+});
