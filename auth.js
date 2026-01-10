@@ -1,4 +1,3 @@
-// auth.js
 const API_URL = "https://store-backend-a653.onrender.com/api";
 
 function setToken(token) {

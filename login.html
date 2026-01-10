@@ -41,12 +41,14 @@ document.getElementById("loginForm").addEventListener("submit", async e => {
   const msg = document.getElementById("loginMsg");
 
   try {
-    await login(email, password);
+    await login(email, password); // Saves token & userName
+    // Redirect AFTER saving
     window.location.href = "index.html";
   } catch (err) {
     msg.textContent = err.error || "Login failed";
   }
 });
+
 </script>
 
 </body>

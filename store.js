@@ -1,3 +1,4 @@
+// ---------------------- Global Variables ----------------------
 const API_URL = "https://store-backend-a653.onrender.com/api";
 const productsContainer = document.getElementById("productsContainer");
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -11,36 +12,83 @@ const products = [
   { id: 5, title: "Sweatshirt", price: 450, image: "images/sweatshirt.png" }
 ];
 
-// ---------------------- Cart Functions ----------------------
+// ---------------------- Auth ----------------------
+function setToken(token) {
+  localStorage.setItem("token", token);
+}
+
+function getToken() {
+  return localStorage.getItem("token");
+}
+
+// Login
+async function login(email, password) {
+  try {
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw data;
+
+    // Save token AND username
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("userName", data.user.name); // <-- must match 'name' from API
+    return data;
+  } catch (err) {
+    return Promise.reject({ error: err.error || "Invalid email or password" });
+  }
+}
+
+
+//Signup
+async function signup(name, email, password) {
+  try {
+    const res = await fetch(`${API_URL}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw data;
+    setToken(data.token);
+    return data;
+  } catch (err) {
+    return Promise.reject({ error: err.error || "Signup failed" });
+  }
+}
+
+
+// ---------------------- Cart ----------------------
 function saveCart() {
   localStorage.setItem("cart", JSON.stringify(cart));
   updateCartButton();
 }
 
 function updateCartButton() {
-  const btn = document.getElementById("goToCartBtn");
   const countElem = document.getElementById("cartCount");
-  if (!btn || !countElem) return;
+  const goToCartBtn = document.getElementById("goToCartBtn");
+  if (!countElem || !goToCartBtn) return;
 
-  const count = cart.length;
-  if (count > 0) {
-    btn.style.display = "inline-block";
-    countElem.textContent = count;
+  if (cart.length > 0) {
+    countElem.textContent = cart.length;
+    goToCartBtn.style.display = "inline-block";
   } else {
-    btn.style.display = "none";
+    countElem.textContent = "0";
+    goToCartBtn.style.display = "none";
   }
 }
 
 function addToCart(productId) {
-  const product = products.find(p => p.id === productId);
-  if (!product) return;
-
-  // Optional: authentication check
-  if (!localStorage.getItem("token")) {
+  if (!getToken()) {
     alert("Please login to add to cart!");
     window.location.href = "login.html";
     return;
   }
+
+  const product = products.find(p => p.id === productId);
+  if (!product) return;
 
   cart.push(product);
   saveCart();
@@ -50,8 +98,8 @@ function addToCart(productId) {
 // ---------------------- Render Products ----------------------
 function renderProducts() {
   if (!productsContainer) return;
+  const token = getToken();
 
-  const token = localStorage.getItem("token");
   productsContainer.innerHTML = products.map(p => `
     <div class="product-card">
       <img src="${p.image}" alt="${p.title}">
@@ -64,43 +112,46 @@ function renderProducts() {
   `).join('');
 }
 
-// ---------------------- Auth & Nav ----------------------
-function getToken() {
-  return localStorage.getItem("token");
-}
-
-function logout() {
-  localStorage.removeItem("token");
-  updateNav(); // Update nav links after logout
-  window.location.href = "index.html";
-}
-
+// ---------------------- Render Nav ----------------------
 function updateNav() {
   const loginLink = document.getElementById("loginLink");
   const signupLink = document.getElementById("signupLink");
   const logoutLink = document.getElementById("logoutLink");
+  const userNameSpan = document.getElementById("userName");
 
-  if (!loginLink || !signupLink || !logoutLink) return;
+  const token = localStorage.getItem("token");
+  const name = localStorage.getItem("userName") || "";
 
-  if (getToken()) {
+  if (token && name) {
     loginLink.style.display = "none";
     signupLink.style.display = "none";
     logoutLink.style.display = "inline-block";
+    userNameSpan.style.display = "inline-block";
+    userNameSpan.textContent = `Hello, ${name}`;
   } else {
     loginLink.style.display = "inline-block";
     signupLink.style.display = "inline-block";
     logoutLink.style.display = "none";
+    userNameSpan.style.display = "none";
   }
 }
 
-// Call this on page load
-document.addEventListener("DOMContentLoaded", () => {
+
+// Logout
+function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("userName");
   updateNav();
-});
+  window.location.href = "index.html";
+}
+
 
 // ---------------------- Initialize ----------------------
 document.addEventListener("DOMContentLoaded", () => {
+  updateNav();
   renderProducts();
   updateCartButton();
-});
 
+  const logoutLink = document.getElementById("logoutLink");
+  if (logoutLink) logoutLink.addEventListener("click", logout);
+});
