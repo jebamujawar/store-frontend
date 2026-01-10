@@ -110,7 +110,9 @@ function removeFromCart(productId) {
 
 // ---------------------- Render ----------------------
 function renderProducts() {
+  const productsContainer = document.getElementById("productsContainer");
   if (!productsContainer) return;
+
   const token = getToken();
 
   productsContainer.innerHTML = products.map(p => `
@@ -127,6 +129,7 @@ function renderProducts() {
     </div>
   `).join('');
 }
+
 
 function renderCart() {
   const cartContainer = document.getElementById("cartContainer");
