@@ -1,6 +1,5 @@
 const API_URL = "https://store-backend-a653.onrender.com/api";
 const productsContainer = document.getElementById("productsContainer");
-const cartCount = document.getElementById("cartCount");
 
 const products = [
   { id: 1, title: "Toddler-Pajama", price: 320, image: "images/toddler-pajama.png" },
@@ -9,6 +8,7 @@ const products = [
   { id: 4, title: "Girl-Dress", price: 500, image: "images/girl-dress.jfif" },
   { id: 5, title: "Sweatshirt", price: 450, image: "images/sweatshirt.png" }
 ];
+
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 // ---------------------- Auth ----------------------
@@ -44,11 +44,8 @@ async function login(email, password) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
     });
-
     const data = await res.json();
-
     if (!res.ok) throw data;
-
     setToken(data.token);
     return data;
   } catch (err) {
@@ -64,16 +61,13 @@ async function signup(name, email, password) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password })
     });
-
     const data = await res.json();
-
     if (!res.ok) {
       if (data.error && data.error.toLowerCase().includes("already")) {
         throw { error: "Email already exists. Please login instead." };
       }
       throw data;
     }
-
     setToken(data.token);
     return data;
   } catch (err) {
@@ -84,8 +78,25 @@ async function signup(name, email, password) {
 // ---------------------- Cart ----------------------
 function saveCart() {
   localStorage.setItem("cart", JSON.stringify(cart));
+  updateCartButton();
 }
 
+// Show/Hide "Go to Cart" and update count
+function updateCartButton() {
+  const btn = document.getElementById("goToCartBtn");
+  const countElem = document.getElementById("cartCount");
+  if (!btn || !countElem) return;
+
+  const count = cart.length;
+  if (count > 0) {
+    btn.style.display = "inline-block";
+    countElem.textContent = count;
+  } else {
+    btn.style.display = "none";
+  }
+}
+
+// Add product to cart
 function addToCart(productId) {
   if (!getToken()) {
     alert("You must log in to add items to the cart!");
@@ -102,6 +113,7 @@ function addToCart(productId) {
   alert(`${product.title} added to cart!`);
 }
 
+// Remove product from cart
 function removeFromCart(productId) {
   cart = cart.filter(p => p.id !== productId);
   saveCart();
@@ -110,9 +122,7 @@ function removeFromCart(productId) {
 
 // ---------------------- Render ----------------------
 function renderProducts() {
-  const productsContainer = document.getElementById("productsContainer");
   if (!productsContainer) return;
-
   const token = getToken();
 
   productsContainer.innerHTML = products.map(p => `
@@ -129,7 +139,6 @@ function renderProducts() {
     </div>
   `).join('');
 }
-
 
 function renderCart() {
   const cartContainer = document.getElementById("cartContainer");
@@ -159,7 +168,6 @@ function checkout() {
     window.location.href = "login.html";
     return;
   }
-
   if (cart.length === 0) {
     alert("Your cart is empty!");
     return;
@@ -175,6 +183,7 @@ function checkout() {
 document.addEventListener("DOMContentLoaded", () => {
   renderProducts();
   renderCart();
+  updateCartButton(); // Show cart button if items exist
 
   const checkoutBtn = document.getElementById("checkoutBtn");
   if (checkoutBtn) checkoutBtn.addEventListener("click", checkout);
