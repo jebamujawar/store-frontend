@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Login | My Store</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <header>
   <h1>My Store</h1>
   <nav>
     <a href="index.html">Home</a>
     <a href="signup.html">Signup</a>
+    <a id="logoutLink" href="#" style="display:none;">Logout</a>
   </nav>
 </header>
 
@@ -27,29 +27,10 @@
   <p id="loginMsg" class="error-msg"></p>
 
   <p class="signup-msg">
-    Don’t have an account?
-    <a href="signup.html">Sign up</a>
+    Don’t have an account? <a href="signup.html">Sign up</a>
   </p>
 </main>
 
 <script src="store.js"></script>
-<script>
-document.getElementById("loginForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const msg = document.getElementById("loginMsg");
-
-  try {
-    await login(email, password); // Saves token & userName
-    // Redirect AFTER saving
-    window.location.href = "index.html";
-  } catch (err) {
-    msg.textContent = err.error || "Login failed";
-  }
-});
-
-</script>
-
 </body>
 </html>

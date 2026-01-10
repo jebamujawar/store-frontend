@@ -1,32 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>My Store</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<header>
-  <h1>My Store</h1>
-  <nav>
-  <span id="userName" style="display:none; margin-right:10px;"></span>
-  <a id="loginLink" href="login.html">Login</a>
-  <a id="signupLink" href="signup.html">Signup</a>
-  <a id="logoutLink" href="logout.html" style="display:none">Logout</a>
-  <a id="goToCartBtn" href="cart.html" style="display:none">Go to Cart (<span id="cartCount">0</span>)</a>
-</nav>
+  <header>
+    <h1>My Store</h1>
+    <nav>
+      <a id="loginLink" href="login.html">Login</a>
+      <a id="signupLink" href="signup.html">Signup</a>
+      <a id="logoutLink" href="#" style="display:none;">Logout</a>
+      <a id="goToCartBtn" href="cart.html" style="display:none">Go to Cart (<span id="cartCount">0</span>)</a>
+    </nav>
+  </header>
 
-</header>
+  <main>
+    <h2>Products</h2>
+    <div id="productsContainer" class="products-grid"></div>
+  </main>
 
-<main>
-  <h2>Products</h2>
-  <div id="productsContainer" class="products-grid"></div>
-</main>
+  <script src="store.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      renderProducts();
+      updateCartButton();
+      updateNav();
 
-<!-- Scripts -->
-<script src="store.js"></script>
-<script>
-  
-</script>
+      // Attach logout event
+      const logoutLink = document.getElementById("logoutLink");
+      if (logoutLink) {
+        logoutLink.addEventListener("click", () => {
+          logout();
+        });
+      }
+    });
+  </script>
 </body>
 </html>

@@ -1,9 +1,6 @@
 // ---------------------- Global Variables ----------------------
 const API_URL = "https://store-backend-a653.onrender.com/api";
-const productsContainer = document.getElementById("productsContainer");
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-// Dummy products
 const products = [
   { id: 1, title: "Toddler-Pajama", price: 320, image: "images/toddler-pajama.png" },
   { id: 2, title: "Dress", price: 350, image: "images/dress.png" },
@@ -21,63 +18,45 @@ function getToken() {
   return localStorage.getItem("token");
 }
 
-// Login
-async function login(email, password) {
-  try {
-    const res = await fetch(`${API_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
-    const data = await res.json();
-    if (!res.ok) throw data;
-
-    // Save token AND username
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("userName", data.user.name); // <-- must match 'name' from API
-    return data;
-  } catch (err) {
-    return Promise.reject({ error: err.error || "Invalid email or password" });
-  }
+function logout() {
+  localStorage.removeItem("token");
+  updateNav(); // Update navbar before redirect
+  window.location.href = "login.html";
 }
 
+// ---------------------- Navbar ----------------------
+function updateNav() {
+  const loginLink = document.getElementById("loginLink");
+  const signupLink = document.getElementById("signupLink");
+  const logoutLink = document.getElementById("logoutLink");
+  const goToCartBtn = document.getElementById("goToCartBtn");
+  const cartCount = document.getElementById("cartCount");
 
-//Signup
-async function signup(name, email, password) {
-  try {
-    const res = await fetch(`${API_URL}/auth/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password })
-    });
-    const data = await res.json();
-    if (!res.ok) throw data;
-    setToken(data.token);
-    return data;
-  } catch (err) {
-    return Promise.reject({ error: err.error || "Signup failed" });
+  if (getToken()) {
+    if (loginLink) loginLink.style.display = "none";
+    if (signupLink) signupLink.style.display = "none";
+    if (logoutLink) logoutLink.style.display = "inline-block";
+  } else {
+    if (loginLink) loginLink.style.display = "inline-block";
+    if (signupLink) signupLink.style.display = "inline-block";
+    if (logoutLink) logoutLink.style.display = "none";
+  }
+
+  if (goToCartBtn && cartCount) {
+    if (cart.length > 0) {
+      goToCartBtn.style.display = "inline-block";
+      cartCount.textContent = cart.length;
+    } else {
+      goToCartBtn.style.display = "none";
+      cartCount.textContent = "0";
+    }
   }
 }
-
 
 // ---------------------- Cart ----------------------
 function saveCart() {
   localStorage.setItem("cart", JSON.stringify(cart));
-  updateCartButton();
-}
-
-function updateCartButton() {
-  const countElem = document.getElementById("cartCount");
-  const goToCartBtn = document.getElementById("goToCartBtn");
-  if (!countElem || !goToCartBtn) return;
-
-  if (cart.length > 0) {
-    countElem.textContent = cart.length;
-    goToCartBtn.style.display = "inline-block";
-  } else {
-    countElem.textContent = "0";
-    goToCartBtn.style.display = "none";
-  }
+  updateNav();
 }
 
 function addToCart(productId) {
@@ -86,7 +65,6 @@ function addToCart(productId) {
     window.location.href = "login.html";
     return;
   }
-
   const product = products.find(p => p.id === productId);
   if (!product) return;
 
@@ -95,9 +73,43 @@ function addToCart(productId) {
   alert(`${product.title} added to cart!`);
 }
 
-// ---------------------- Render Products ----------------------
-function renderProducts() {
+function removeFromCart(productId) {
+  cart = cart.filter(p => p.id !== productId);
+  saveCart();
+  renderCart();
+}
+
+function renderCart(cartContainerId = "cartContainer", cartTotalId = "cartTotal") {
+  const cartContainer = document.getElementById(cartContainerId);
+  const cartTotalElem = document.getElementById(cartTotalId);
+  if (!cartContainer) return;
+
+  if (cart.length === 0) {
+    cartContainer.innerHTML = "<p>Your cart is empty.</p>";
+    if (cartTotalElem) cartTotalElem.textContent = "0";
+    return;
+  }
+
+  cartContainer.innerHTML = cart.map(p => `
+    <div class="cart-item">
+      <img src="${p.image}" alt="${p.title}">
+      <span>${p.title}</span>
+      <span>$${p.price}</span>
+      <button onclick="removeFromCart(${p.id})">Remove</button>
+    </div>
+  `).join('');
+
+  if (cartTotalElem) {
+    const total = cart.reduce((sum, item) => sum + item.price, 0);
+    cartTotalElem.textContent = total.toFixed(2);
+  }
+}
+
+// ---------------------- Products ----------------------
+function renderProducts(containerId = "productsContainer") {
+  const productsContainer = document.getElementById(containerId);
   if (!productsContainer) return;
+
   const token = getToken();
 
   productsContainer.innerHTML = products.map(p => `
@@ -112,46 +124,139 @@ function renderProducts() {
   `).join('');
 }
 
-// ---------------------- Render Nav ----------------------
-function updateNav() {
-  const loginLink = document.getElementById("loginLink");
-  const signupLink = document.getElementById("signupLink");
-  const logoutLink = document.getElementById("logoutLink");
-  const userNameSpan = document.getElementById("userName");
+// ---------------------- Forms ----------------------
+function initLoginForm() {
+  const loginForm = document.getElementById("loginForm");
+  const loginMsg = document.getElementById("loginMsg");
+  if (!loginForm) return;
 
-  const token = localStorage.getItem("token");
-  const name = localStorage.getItem("userName") || "";
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loginMsg.textContent = "";
 
-  if (token && name) {
-    loginLink.style.display = "none";
-    signupLink.style.display = "none";
-    logoutLink.style.display = "inline-block";
-    userNameSpan.style.display = "inline-block";
-    userNameSpan.textContent = `Hello, ${name}`;
-  } else {
-    loginLink.style.display = "inline-block";
-    signupLink.style.display = "inline-block";
-    logoutLink.style.display = "none";
-    userNameSpan.style.display = "none";
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    try {
+      await login(email, password);
+      alert("Login successful!");
+      updateNav();
+      window.location.href = "index.html";
+    } catch (err) {
+      loginMsg.textContent = err.error;
+    }
+  });
+}
+
+function initSignupForm() {
+  const signupForm = document.getElementById("signupForm");
+  const signupMsg = document.getElementById("signupMsg");
+  if (!signupForm) return;
+
+  signupForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    signupMsg.textContent = "";
+
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    try {
+      await signup(name, email, password);
+      alert("Signup successful!");
+      updateNav();
+      window.location.href = "index.html";
+    } catch (err) {
+      signupMsg.textContent = err.error;
+    }
+  });
+}
+
+// ---------------------- API Login/Signup ----------------------
+async function login(email, password) {
+  try {
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw { error: data.error || "Login failed" };
+    setToken(data.token);
+    return data;
+  } catch (err) {
+    throw { error: err.error || "Login failed" };
   }
 }
 
+async function signup(name, email, password) {
+  try {
+    const res = await fetch(`${API_URL}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password })
+    });
 
-// Logout
-function logout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("userName");
-  updateNav();
+    const data = await res.json();
+    if (!res.ok) throw { error: data.error || "Signup failed" };
+    setToken(data.token);
+    return data;
+  } catch (err) {
+    throw { error: err.error || "Signup failed" };
+  }
+}
+
+// ---------------------- Checkout ----------------------
+function checkout() {
+  if (!getToken()) {
+    alert("Please login to checkout!");
+    window.location.href = "login.html";
+    return;
+  }
+
+  if (cart.length === 0) {
+    alert("Your cart is empty!");
+    return;
+  }
+
+  const total = cart.reduce((sum, item) => sum + item.price, 0).toFixed(2);
+  alert(`Checkout successful! Total: $${total}`);
+
+  // Clear cart
+  cart = [];
+  saveCart();
+
+  // Redirect to home page after checkout
   window.location.href = "index.html";
 }
 
+// ---------------------- Logout ----------------------
+function logout() {
+  localStorage.removeItem("token"); // remove token
+  updateNav(); // update navbar
+  window.location.href = "index.html"; // redirect to home page
+}
 
 // ---------------------- Initialize ----------------------
 document.addEventListener("DOMContentLoaded", () => {
   updateNav();
   renderProducts();
-  updateCartButton();
+  renderCart();
+  initLoginForm();
+  initSignupForm();
 
+  // Attach logout globally if exists
   const logoutLink = document.getElementById("logoutLink");
-  if (logoutLink) logoutLink.addEventListener("click", logout);
+  if (logoutLink) {
+    logoutLink.addEventListener("click", () => {
+      logout();
+    });
+  }
+
+  // Attach checkout if exists
+  const checkoutBtn = document.getElementById("checkoutBtn");
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener("click", () => checkout());
+  }
 });
